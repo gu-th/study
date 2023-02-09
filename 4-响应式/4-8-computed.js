@@ -1,7 +1,7 @@
 /**
  * @title 计算属性 computed
- * 
- * 
+ *
+ *
  */
 
 // 存储副作用函数的桶, 收集副作用
@@ -36,7 +36,8 @@ function effect(fn, options = {}) {
   effectFn.deps = []
 
   // 非lazy的时候 才执行
-  if (!options.lazy) { // 新增
+  if (!options.lazy) {
+    // 新增
     // 执行副作用函数
     effectFn()
   }
@@ -57,7 +58,7 @@ function cleanup(effectFn) {
 // 原始数据
 const data = {
   foo: 1,
-  bar: 2
+  bar: 2,
 }
 // 代理数据
 const obj = new Proxy(data, {
@@ -145,7 +146,7 @@ function computed(getter) {
    * 计算属性内部拥有自己的effect 且 是懒执行的, 只有真正读取的时候才会执行
    * 对于getter来说, 里面访问的响应式数据会把computed内部的effect收集为依赖
    * 而把计算属性用在另一个effect里面时, 又产生了effect嵌套, 外层的effect不会被内层的effect中的响应式收集
-   * 因为 需要手动调用trigger和 track触发追踪陪与响应
+   * 因此 需要手动调用trigger和 track触发追踪陪与响应
    */
   const effectFn = effect(getter, {
     lazy: true,
@@ -166,7 +167,7 @@ function computed(getter) {
         dirty = false
       }
       // 当读取value时, 手动调用track收集依赖
-      trace(obj, 'value')
+      track(obj, 'value')
       return value
     }
   }
@@ -174,5 +175,7 @@ function computed(getter) {
 }
 const sumRes = computed(() => obj.bar + obj.foo)
 
-obj.foo ++ 
-console.log(sumRes.value);
+effect(function effectFn() {
+  console.log(sumRes.value)
+})
+obj.bar ++
