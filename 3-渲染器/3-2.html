@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3-2</title>
+  </head>
+  <body>
+    <script>
+      const vnode = {
+        tag: 'div',
+        props: {
+          onClick: () => {
+            alert('click me');
+          },
+          id: 'test',
+          class: 'test',
+          style: 'color: red;font-size:30px;',
+        },
+        children: 'click me',
+      };
+
+      renderer(vnode, document.body)
+
+      function renderer(vnode, container) {
+        const { tag, props, children } = vnode;
+        // tag作为标签名创建一个dom元素
+        const el = document.createElement(tag);
+        // 遍历props，将属性添加到dom元素上
+        for (const key in props) {
+          // on 开头的 作为事件 绑定在dom上
+          if (/^on/.test(key)) {
+            el.addEventListener(key.substr(2).toLowerCase(), props[key]);
+          } else {
+            // 普通属性
+            el.setAttribute(key, props[key]);
+          }
+        }
+        // 处理children
+        if (typeof children === 'string') {
+          // 字符串就是文本节点
+          // el.innerText = children
+          el.appendChild(document.createTextNode(children))
+        }
+        if (Array.isArray(children)) {
+          // 递归调用渲染子节点，挂载在当前的 el 元素上
+          children.forEach(child => {
+            renderer(child, el)
+          })
+        }
+        // 将元素挂载在指定的节点下
+        container.appendChild(el);
+      }
+    </script>
+  </body>
+</html>
