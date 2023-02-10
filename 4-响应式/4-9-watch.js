@@ -174,6 +174,19 @@ function computed(getter) {
   return obj
 }
 
+// 硬编码只能观测一个属性的变化， 为更具通用性，封装了traverse读取每一个属性
+// function watch(source, cb) {
+//   effect(
+//     () => source.foo,
+//     {
+//       scheduler() {
+//         cb()
+//       }
+//     }
+//   )
+// }
+
+
 // * watch
 function watch(source, cb) {
   // 定义getter
