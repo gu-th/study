@@ -21,10 +21,10 @@ const arr = reactive(['foo']) // 数组的原长度为 1
 // 设置索引 1 的值，会导致数组的长度变为 2
 arr[1] = 'bar'
 // 修改length属性，致数组清空
-arr.length= 0
+arr.length = 0
 
 function createReactive(obj, isShallow = false, isReadonly = false) {
-  return new Proxy(arr, {
+  return new Proxy(obj, {
     set(target, key, newValue, receiver) {
       if (isReadonly) {
         console.warn(`属性 ${key} 是只读的`)
