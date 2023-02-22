@@ -89,6 +89,7 @@ function patch(n1, n2, container, anchor) {
 
 // 修改 mountElement 函数接收第三个参数 锚点元素
 function mountElement(vnode, container, anchor) {
+  const el = (vnode.el = createElement(vnode.type))
   // ...
   
   // 插入节点时，将锚点元素传递给 insert 函数
