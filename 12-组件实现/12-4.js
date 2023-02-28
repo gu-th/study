@@ -4,11 +4,20 @@
 
 function mountComponent(vnode, container, anchor) {
   const componentOptions = vnode.type
-  const { render, data, beforeCreate, created, beforeMount, mounted,
-    beforeUpdate, updated, props: propsOption } = componentOptions
+  const {
+    render,
+    data,
+    beforeCreate,
+    created,
+    beforeMount,
+    mounted,
+    beforeUpdate,
+    updated,
+    props: propsOption,
+  } = componentOptions
 
-    // 调用 钩子
-    beforeCreate && beforeCreate()
+  // 调用 钩子
+  beforeCreate && beforeCreate()
 
   const state = reactive(data())
 
@@ -23,7 +32,7 @@ function mountComponent(vnode, container, anchor) {
     // 是否已被挂载
     isMounted: false,
     // 组件渲染内容，即子树 (subTree)
-    subTree: null
+    subTree: null,
   }
 
   // 将组件实例设置到 vnode 上，用于后续更新
@@ -31,40 +40,59 @@ function mountComponent(vnode, container, anchor) {
 
   // 创建渲染上下文对象 本质是组件实例的代理
   const renderContext = new Proxy(instance, {
-    // get(t, k, r) {
-
-    // }
+    get(t, k, r) {
+      // 取得组件自身状态数据
+      const { state, props } = t
+      // 读取自身状态、
+      if (state && k in state) {
+        return state[k]
+      } else if (k in props) {
+        return props[k]
+      } else {
+        console.error('不存在')
+      }
+    },
+    set(t, k, v, r) {
+      const { state, props } = t
+      if (state && k in state) {
+        state[k] = v
+      } else if (k in props) {
+        props[k] = v
+      } else {
+        console.error('不存在')
+      }
+    },
   })
-
 
   created && created.call(state)
 
-  effect(() => {
-    // 调用组件渲染函数  获取子树
-    const subTree = render.call(state, state)
-    // 检查组件是否挂载
-    if (!instance.isMounted) {
-      beforeMount && beforeMount.call(state)
-      
-      // 初次挂载
-      patch(null, subTree, container, anchor)
-      // 设置为 true 更新时就不会再次进行挂载， 而是执行更新
-      instance.isMounted = true
+  effect(
+    () => {
+      // 调用组件渲染函数  获取子树
+      const subTree = render.call(state, state)
+      // 检查组件是否挂载
+      if (!instance.isMounted) {
+        beforeMount && beforeMount.call(state)
 
-      mounted && mounted.call(state)
-    } else {
-      beforeUpdate && beforeUpdate.call(state)
-      // 组件已挂载，进行更新，使用新子树与上一次的子树 进行打补丁操作
-      patch(instance.subTree, subTree, container, anchor)
-      updated && updated.call(state)
+        // 初次挂载
+        patch(null, subTree, container, anchor)
+        // 设置为 true 更新时就不会再次进行挂载， 而是执行更新
+        instance.isMounted = true
+
+        mounted && mounted.call(state)
+      } else {
+        beforeUpdate && beforeUpdate.call(state)
+        // 组件已挂载，进行更新，使用新子树与上一次的子树 进行打补丁操作
+        patch(instance.subTree, subTree, container, anchor)
+        updated && updated.call(state)
+      }
+      // 更新组件实例的子树
+      instance.subTree = subTree
+    },
+    {
+      scheduler: queueJob,
     }
-    // 更新组件实例的子树
-    instance.subTree = subTree
-
-  }, {
-    scheduler: queueJob
-  })
-
+  )
 }
 
 function resolveProps(options, propsData) {
@@ -92,7 +120,7 @@ function patchComponent(n1, n2, container) {
   // 调用 hasPropsChanged 检测子组件传递的 props 是否发生变化，没变化则不需要更新
   if (hasPropsChanged(n1.props, n2.props)) {
     // 调用 resolveProps 函数重新获取 props 数据
-    const [ nextProps ] = resolveProps(n2.type.props, n2.props)
+    const [nextProps] = resolveProps(n2.type.props, n2.props)
     // 更新 props
     for (const key in nextProps) {
       props[key] = nextProps[key]
