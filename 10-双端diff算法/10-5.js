@@ -2,10 +2,6 @@
  * @title 移除不存在的元素
  */
 
-/**
- * @title 添加元素
- */
-
 function patchKeyedChildren(n1, n2, container) {
   const oldChildren = n1.children
   const newChildren = n2.children
